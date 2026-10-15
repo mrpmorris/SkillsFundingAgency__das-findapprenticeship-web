@@ -1,5 +1,7 @@
+using System.Threading.RateLimiting;
 using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 using SFA.DAS.FAA.Web.AppStart;
 using SFA.DAS.FAA.Web.ModelBinding;
@@ -39,6 +41,20 @@ builder.Services.AddHealthChecks()
 
 builder.Services.AddControllersWithViews()
     .AddSessionStateTempDataProvider();
+builder.Services.AddRateLimiter(options =>
+{
+    options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+    options.AddPolicy("Search", context =>
+        RateLimitPartition.GetFixedWindowLimiter(
+            $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:{context.Request.Path}",
+            _ => new FixedWindowRateLimiterOptions
+            {
+                PermitLimit = 1,
+                Window = TimeSpan.FromSeconds(1),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            }));
+});
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromSeconds(15);
@@ -85,6 +101,7 @@ app.UseHealthChecks();
 
 app.UseAuthentication();
 app.UseRouting();
+app.UseRateLimiter();
 app.UseAuthorization();
 
 app.AddRedirectRules();
