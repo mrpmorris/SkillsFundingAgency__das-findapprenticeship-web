@@ -2,7 +2,6 @@ using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using SFA.DAS.FAA.Application.Commands.SavedSearches.PostSaveSearch;
@@ -175,7 +174,6 @@ public class SearchApprenticeshipsController(
     }
 
     [Route("apprenticeships", Name = RouteNames.SearchResults)]
-    [EnableRateLimiting("Search")]
     public async Task<IActionResult> SearchResults(
         [FromServices] IValidator<GetSearchResultsRequest> validator,
         [FromQuery] GetSearchResultsRequest request)
@@ -323,7 +321,6 @@ public class SearchApprenticeshipsController(
 
     [HttpGet]
     [Route("map-search-results", Name = RouteNames.MapSearchResults)]
-    [EnableRateLimiting("Search")]
     public async Task<IActionResult> MapSearchResults([FromQuery] GetSearchResultsRequest request)
     {
         var validDistanceValues = new List<int> { 2, 5, 10, 15, 20, 30, 40 };
