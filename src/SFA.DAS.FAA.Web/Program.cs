@@ -46,7 +46,7 @@ builder.Services.AddRateLimiter(options =>
     options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
     options.AddPolicy("Search", context =>
         RateLimitPartition.GetFixedWindowLimiter(
-            $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:{context.GetEndpoint()?.DisplayName ?? "unknown"}",
+            $"{context.Connection.RemoteIpAddress?.ToString() ?? "unknown"}:{context.Request.Path}",
             _ => new FixedWindowRateLimiterOptions
             {
                 PermitLimit = 1,
